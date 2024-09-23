@@ -1,12 +1,15 @@
-import { View, Text, Image, StyleSheet, Pressable } from 'react-native'
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { hp, wp } from '@/helpers/common'
 import { LinearGradient } from 'expo-linear-gradient'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import theme from '@/constants/theme'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export default function WelcomeScreen () {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>()
   return (
     <View style={{ flex: 1 }}>
       <StatusBar />
@@ -30,18 +33,30 @@ export default function WelcomeScreen () {
         />
         {/* content */}
         <View style={styles.contentContainer}>
-                  <Animated.Text
-                      entering={FadeInDown.delay(400).springify()}
-                      style={styles.brandName}>Galleria</Animated.Text>
           <Animated.Text
-                      entering={FadeInDown.delay(500).springify()} style={styles.slug}>Manage you photos</Animated.Text>
-                  <Animated.View
-                      entering={FadeInDown.delay(600).springify()}
-                      style={styles.button}>
-            <Pressable>
+            entering={FadeInDown.delay(400).springify()}
+            style={styles.brandName}
+          >
+            Galleria
+          </Animated.Text>
+          <Animated.Text
+            entering={FadeInDown.delay(500).springify()}
+            style={styles.slug}
+          >
+            Manage you photos
+          </Animated.Text>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('Home')
+            }}
+          >
+          <Animated.View
+            entering={FadeInDown.delay(600).springify()}
+            style={styles.button}
+          >
               <Text style={styles.buttonText}>Start Explore</Text>
-            </Pressable>
           </Animated.View>
+            </TouchableOpacity>
         </View>
       </Animated.View>
     </View>
@@ -89,6 +104,6 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: hp(3),
     letterSpacing: 1,
-    fontWeight: "500"
+    fontWeight: '500'
   }
 })

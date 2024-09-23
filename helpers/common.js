@@ -11,3 +11,21 @@ export const hp = percentage => {
     const height = deviceHeight
     return (percentage * height) / 100
 }
+
+export const getColumns = () => {
+    if (deviceWidth > 1024)
+        return 4
+    else if (deviceWidth >= 768)
+        return 3
+    else
+        return 2
+}
+
+export const getImageSize = (width, height) => {
+    if (width > height)
+        return 250
+    else if (width < height)
+        return 300
+    else
+        return 200
+}

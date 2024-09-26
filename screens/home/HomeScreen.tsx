@@ -14,7 +14,9 @@ import { hp, wp } from '@/helpers/common'
 import Categories from '@/components/Categories'
 import { getPhotos } from '@/api'
 import ImageGrid from '@/components/ImageGrid'
-import { debounce } from 'lodash'
+import { debounce, filter } from 'lodash'
+import FiltersModal from '@/components/FiltersModal'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 export default function HomeScreen () {
   let page = 1
@@ -22,8 +24,10 @@ export default function HomeScreen () {
   const paddingTop = top > 0 ? top + 10 : 30
   const [search, setSearch] = useState('')
   const [images, setImages] = useState<any>([])
+  const [filters, setFilters] = useState<any>(null)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const searchInputRef = useRef(null)
+  const modalRef = useRef<BottomSheetModal>(null)
 
   useEffect(() => {
     getPhotosHomeScreen()
@@ -53,17 +57,14 @@ export default function HomeScreen () {
   const handleSearch = (text: string) => {
     console.log('searching for:', text)
     setSearch(text)
+    page = 1
+    setImages([])
+    setActiveCategory(null)
     if (text.length > 2) {
-      page = 1
-      setActiveCategory(null)
-      setImages([])
       getPhotosHomeScreen({ page, q: text }, false)
     }
     if (text === '') {
-      page = 1
-      setActiveCategory(null)
       searchInputRef?.current?.clear()
-      setImages([])
       getPhotosHomeScreen({ page })
     }
   }
@@ -75,16 +76,37 @@ export default function HomeScreen () {
 
   const handleTextDebounce = useCallback(debounce(handleSearch, 400), [])
 
+  const handleOpenFiltersModal = () => {
+    modalRef?.current?.present()
+  }
+  const handleCloseFiltersModal = () => {
+    modalRef?.current?.close()
+  }
+
+  const applyFilters = () => {
+    console.log('apply filters')
+    handleCloseFiltersModal()
+  }
+  const resetFilters = () => {
+    console.log('reset filters')
+    handleCloseFiltersModal()
+  }
+
+  console.log("filters",filters);
+  
+
   return (
     <View style={{ flex: 1, gap: 14, paddingTop: paddingTop }}>
       {/* header */}
       <View style={styles.header}>
         <Text style={styles.brandName}>Galleria</Text>
-        <FontAwesome6
-          name='bars-staggered'
-          size={24}
-          color={theme.colors.neutral(0.7)}
-        />
+        <Pressable onPress={handleOpenFiltersModal}>
+          <FontAwesome6
+            name='bars-staggered'
+            size={24}
+            color={theme.colors.neutral(0.7)}
+          />
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={{ gap: 14 }}>
@@ -132,6 +154,16 @@ export default function HomeScreen () {
         {/* images masonry grid */}
         <View>{images.length > 0 && <ImageGrid images={images} />}</View>
       </ScrollView>
+
+      {/* filters modal */}
+      <FiltersModal
+        modalRef={modalRef}
+        filters={filters}
+        setFilters={setFilters}
+        onClose={handleCloseFiltersModal}
+        applyFilters={applyFilters}
+        resetFilters={resetFilters}
+      />
     </View>
   )
 }

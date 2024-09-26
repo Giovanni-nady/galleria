@@ -29,3 +29,7 @@ export const getImageSize = (width, height) => {
     else
         return 200
 }
+
+export const capitalize = str => {
+    return str.replace(/\b\w/g,l=>l.toUpperCase())
+}

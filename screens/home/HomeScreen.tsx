@@ -89,6 +89,7 @@ export default function HomeScreen () {
   }
   const resetFilters = () => {
     console.log('reset filters')
+    setFilters(null)
     handleCloseFiltersModal()
   }
 

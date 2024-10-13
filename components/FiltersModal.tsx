@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
 import React, { useMemo } from 'react'
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { BlurView } from 'expo-blur'
@@ -9,7 +9,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import { capitalize, hp } from '@/helpers/common'
 import theme from '@/constants/theme'
-import FilterSectionView, { ColorFilter, CommonFilterRow } from './FilterSectionView'
+import FilterSectionView, {
+  ColorFilter,
+  CommonFilterRow
+} from './FilterSectionView'
 import { filtersData } from '@/constants/data'
 
 export default function FiltersModal ({
@@ -31,7 +34,7 @@ export default function FiltersModal ({
       backdropComponent={CustomBackdrop}
     >
       <BottomSheetView style={styles.contentContainer}>
-        <View style={{ gap: 15 }}>
+        <View style={{ gap: 15, height: '100%' }}>
           <Text
             style={{
               fontWeight: '600',
@@ -61,6 +64,54 @@ export default function FiltersModal ({
               </View>
             )
           })}
+
+          <View
+            style={{
+              flexGrow: 1,
+              marginTop: 'auto',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10
+            }}
+          >
+            <Pressable
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 12,
+                backgroundColor: theme.colors.neutral(0.03),
+                borderRadius: 14,
+                borderCurve: 'continuous',
+                borderWidth: 1,
+                borderColor: theme.colors.grayBG
+              }}
+              onPress={resetFilters}
+            >
+              <Text
+                style={{ color: theme.colors.neutral(0.9), fontSize: hp(2.2) }}
+              >
+                Reset
+              </Text>
+            </Pressable>
+            <Pressable
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 12,
+                backgroundColor: theme.colors.neutral(0.8),
+                borderRadius: 14,
+                borderCurve: 'continuous'
+              }}
+              onPress={applyFilters}
+            >
+              <Text style={{ color: theme.colors.white, fontSize: hp(2.2) }}>
+                Apply
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>

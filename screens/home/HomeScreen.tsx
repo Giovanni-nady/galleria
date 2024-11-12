@@ -4,7 +4,8 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  Pressable
+  Pressable,
+  ActivityIndicator
 } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -17,6 +18,8 @@ import ImageGrid from '@/components/ImageGrid'
 import { debounce, filter } from 'lodash'
 import FiltersModal from '@/components/FiltersModal'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import Animated from 'react-native-reanimated'
+import { useNavigation } from '@react-navigation/native'
 
 export default function HomeScreen () {
   let page = 1
@@ -27,20 +30,29 @@ export default function HomeScreen () {
   const [filters, setFilters] = useState<any>(null)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const searchInputRef = useRef(null)
+  const scrollRef = useRef(null)
   const modalRef = useRef<BottomSheetModal>(null)
+  const [isEndReached, setIsEndReached] = useState(false)
+  const navigation = useNavigation()
 
   useEffect(() => {
     getPhotosHomeScreen()
   }, [])
 
-  const getPhotosHomeScreen = async (params = { page: 1 }, append = false) => {
-    console.log(params, append)
 
-    let res = await getPhotos(params)
-    if (res.success && res?.data?.hits)
-      if (append) setImages([...images, ...res.data.hits])
-      else setImages([...res.data.hits])
+  const getPhotosHomeScreen = async (params = { page: 1 }, append = false) => {
+  try {
+    const res = await getPhotos(params);
+    if (res.success && res?.data?.hits) {
+      setImages(append ? [...images, ...res.data.hits] : [...res.data.hits]);
+    } else {
+      console.error("API response error:", res);
+    }
+  } catch (error) {
+    console.error("Error fetching photos:", error);
   }
+};
+
 
   const handleChangeCategory = (category: string | null) => {
     setActiveCategory(category)
@@ -48,7 +60,8 @@ export default function HomeScreen () {
     clearSearch()
     page = 1
     let params: any = {
-      page
+      page,
+      ...filters
     }
     if (category) params.category = category
     getPhotosHomeScreen(params, false)
@@ -61,11 +74,11 @@ export default function HomeScreen () {
     setImages([])
     setActiveCategory(null)
     if (text.length > 2) {
-      getPhotosHomeScreen({ page, q: text }, false)
+      getPhotosHomeScreen({ page, q: text, ...filters }, false)
     }
     if (text === '') {
       searchInputRef?.current?.clear()
-      getPhotosHomeScreen({ page })
+      getPhotosHomeScreen({ page, ...filters },false)
     }
   }
 
@@ -84,23 +97,92 @@ export default function HomeScreen () {
   }
 
   const applyFilters = () => {
+    if (filters) {
+      page = 1
+      setImages([])
+      let params = {
+        page,
+        ...filters
+      }
+      if (activeCategory) params.category = activeCategory
+      if (search) params.q = search
+      getPhotosHomeScreen(params, false)
+    }
     console.log('apply filters')
     handleCloseFiltersModal()
   }
+
   const resetFilters = () => {
-    console.log('reset filters')
-    setFilters(null)
+    if (filters) {
+      page = 1
+      setFilters(null)
+      setImages([])
+      let params: any = {
+        page
+      }
+      if (activeCategory) params.category = activeCategory
+      if (search) params.q = search
+      getPhotosHomeScreen(params, false)
+    }
+
     handleCloseFiltersModal()
   }
 
-  console.log("filters",filters);
-  
+  const clearThisFilter = (filterName: any) => {
+    let separatedFilters = { ...filters }
+    delete separatedFilters[filterName]
+    setFilters({ ...separatedFilters })
+    page = 1
+    setImages([])
+    let params = {
+      page,
+      ...separatedFilters
+    }
+    if (activeCategory) params.category = activeCategory
+    if (search) params.q = search
+    getPhotosHomeScreen(params, false)
+  }
+
+  const handleScroll = (event: any) => {
+    console.log('event scroll View')
+    const contentHeight = event.nativeEvent.contentSize.height
+    const scrollViewHeight = event.nativeEvent.layoutMeasurement.height
+    const scrollOffset = event.nativeEvent.contentOffset.y
+    const bottomPosition = contentHeight - scrollViewHeight
+
+    if (scrollOffset >= bottomPosition - 1) {
+      if (!isEndReached) {
+        setIsEndReached(true)
+        console.log('reached the bottom of the ScrollView')
+        ++page
+        let params = {
+          page,
+          ...filters
+        }
+        if (activeCategory) params.category = activeCategory
+        if (search) params.q = search
+        getPhotosHomeScreen(params, true)
+      }
+    } else if (isEndReached) {
+      setIsEndReached(false)
+    }
+  }
+
+  const handleScrollUp = () => {
+    scrollRef?.current?.scrollTo({
+      y: 0,
+      animated: true
+    })
+  }
+  console.log('filters', filters)
 
   return (
     <View style={{ flex: 1, gap: 14, paddingTop: paddingTop }}>
       {/* header */}
       <View style={styles.header}>
-        <Text style={styles.brandName}>Galleria</Text>
+        <Pressable onPress={handleScrollUp}>
+          <Text style={styles.brandName}>Galleria</Text>
+        </Pressable>
         <Pressable onPress={handleOpenFiltersModal}>
           <FontAwesome6
             name='bars-staggered'
@@ -110,7 +192,12 @@ export default function HomeScreen () {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={{ gap: 14 }}>
+      <ScrollView
+        ref={scrollRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={5}
+        contentContainerStyle={{ gap: 14 }}
+      >
         {/* searchBar */}
         <View style={styles.searchBar}>
           <View style={styles.searchIcon}>
@@ -152,8 +239,55 @@ export default function HomeScreen () {
           />
         </View>
 
+        {/* filters */}
+        {filters && (
+          <View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filters}
+            >
+              {Object.keys(filters).map((key, index) => {
+                return (
+                  <View key={key} style={styles.filterItem}>
+                    {key === 'colors' ? (
+                      <View
+                        style={{
+                          width: 30,
+                          height: 20,
+                          borderRadius: 7,
+                          backgroundColor: filters[key]
+                        }}
+                      />
+                    ) : (
+                      <Text style={styles.filterItemText}>{filters[key]}</Text>
+                    )}
+                    <Pressable
+                      style={styles.filterCloseIcon}
+                      onPress={() => clearThisFilter(key)}
+                    >
+                      <Ionicons
+                        name='close'
+                        size={24}
+                        color={theme.colors.neutral(0.9)}
+                      />
+                    </Pressable>
+                  </View>
+                )
+              })}
+            </ScrollView>
+          </View>
+        )}
+
         {/* images masonry grid */}
-        <View>{images.length > 0 && <ImageGrid images={images} />}</View>
+        <View>{images.length > 0 && <ImageGrid images={images} navigation={navigation} />}</View>
+
+        {/* loading */}
+        <View
+          style={{ marginBottom: 70, marginTop: images.length > 0 ? 10 : 70 }}
+        >
+          <ActivityIndicator size='large' />
+        </View>
       </ScrollView>
 
       {/* filters modal */}
@@ -206,5 +340,26 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: theme.colors.neutral(0.1),
     borderRadius: theme.radius.sm
+  },
+  filters: {
+    gap: 10,
+    paddingHorizontal: wp(4)
+  },
+  filterItem: {
+    backgroundColor: theme.colors.grayBG,
+    borderRadius: theme.radius.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10
+  },
+  filterItemText: {
+    fontSize: hp(1.9)
+  },
+  filterCloseIcon: {
+    padding: 4,
+    borderRadius: 7,
+    backgroundColor: theme.colors.neutral(0.2)
   }
 })

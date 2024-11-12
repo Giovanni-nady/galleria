@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "galleria",
+    "name": "Galleria",
     "slug": "galleria",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/welcome.png",
@@ -16,12 +16,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.jpg",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.giovanninady.galleria"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "afeb59d4-6005-4664-b777-a6c85203e4b1"
+      }
     }
   }
 }

@@ -6,10 +6,12 @@ import {
   BottomSheetModalProvider
 } from '@gorhom/bottom-sheet'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import ImageScreen from '@/screens/ImageModal/Image'
 
 type AppStackParamList = {
   Welcome: undefined
   Home: undefined
+  Image: undefined
 }
 
 const Stack = createNativeStackNavigator<AppStackParamList>()
@@ -26,6 +28,10 @@ export default function App () {
           >
             <Stack.Screen name='Welcome' component={WelcomeScreen} />
             <Stack.Screen name='Home' component={HomeScreen} />
+            <Stack.Screen name='Image' component={ImageScreen} options={{
+              presentation: "transparentModal",
+              animation:"fade"
+            }}/>
           </Stack.Navigator>
         </NavigationContainer>
       </BottomSheetModalProvider>

@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import ImageCard from './ImageCard'
 import { getColumns, wp } from '@/helpers/common'
 
-const ImageGrid = ({ images }: any) => {
+const ImageGrid = ({ images, navigation }: any) => {
   const columns = getColumns()
   return (
     <View style={{ minHeight: 3, width: wp(100) }}>
@@ -14,7 +14,7 @@ const ImageGrid = ({ images }: any) => {
         // initialNumToRender={1000}
         contentContainerStyle={{ paddingHorizontal: wp(4) }}
         renderItem={({ item, index }) => (
-          <ImageCard item={item} columns={columns} index={index} />
+          <ImageCard item={item} columns={columns} navigation={navigation} index={index} />
         )}
         estimatedItemSize={200}
       />

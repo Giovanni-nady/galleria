@@ -18,12 +18,19 @@ const formatUrl = (params) => {
 
 export const getPhotos = async (params) => {
     try {
-        const response = await axios.get(formatUrl(params))
-        const { data } = response
-        return {success: true, data}
+        const response = await axios.get(formatUrl(params));
+        const { data } = response;
+        return { success: true, data };
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Error :', JSON.stringify(error, null, 2));
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            console.error('Error headers:', error.response?.headers);
+            console.error('Error message:', error.message);
+        } else {
+            console.log('Non-Axios Error:', error);
+        }
+        return { success: false, msg: error.message };
     }
-    catch (err) {
-        console.log(err);
-        return { success: false, msg: err.message }
-    }
-}
+};

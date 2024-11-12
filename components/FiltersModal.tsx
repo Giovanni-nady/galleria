@@ -4,6 +4,7 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { BlurView } from 'expo-blur'
 import Animated, {
   Extrapolation,
+  FadeInDown,
   interpolate,
   useAnimatedStyle
 } from 'react-native-reanimated'
@@ -51,7 +52,9 @@ export default function FiltersModal ({
             let sectionData = filtersData[sectionName]
 
             return (
-              <View key={sectionName}>
+              <Animated.View
+              entering={FadeInDown.delay((index*100)+100).springify().damping(11)}
+                key={sectionName}>
                 <FilterSectionView
                   title={title}
                   content={sectionView({
@@ -61,11 +64,12 @@ export default function FiltersModal ({
                     filterName: sectionName
                   })}
                 />
-              </View>
+              </Animated.View>
             )
           })}
 
-          <View
+          <Animated.View
+              entering={FadeInDown.delay(500).springify().damping(11)}
             style={{
               flexGrow: 1,
               marginTop: 'auto',
@@ -111,7 +115,7 @@ export default function FiltersModal ({
                 Apply
               </Text>
             </Pressable>
-          </View>
+          </Animated.View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>
@@ -122,7 +126,7 @@ const sections: any = {
   order: (props: any) => <CommonFilterRow {...props} />,
   orientation: (props: any) => <CommonFilterRow {...props} />,
   type: (props: any) => <CommonFilterRow {...props} />,
-  color: (props: any) => <ColorFilter {...props} />
+  colors: (props: any) => <ColorFilter {...props} />
 }
 
 const CustomBackdrop = ({ animatedIndex, style }: any) => {

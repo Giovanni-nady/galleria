@@ -32,7 +32,7 @@ export const filtersData: any = {
   order: ['popular', 'latest'],
   orientation: ['horizontal', 'vertical'],
   type: ['photo', 'illustration', 'vector'],
-  color: [
+  colors: [
     'red',
     'orange',
     'yellow',
